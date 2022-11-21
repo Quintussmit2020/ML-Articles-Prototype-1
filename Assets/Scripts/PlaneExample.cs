@@ -29,9 +29,9 @@ public class PlaneExample : MonoBehaviour
 
     public ARRaycastManager raycastManager;
     private List<ARRaycastHit> hits = new List<ARRaycastHit>();
-    private Pose mediaPlayerPose;
-    private bool mediaPlayerPoseValid;// = false;
-    public GameObject mediaPlayerIndicatopr;
+    //private Pose mediaPlayerPose;
+    //private bool mediaPlayerPoseValid;// = false;
+    //public GameObject mediaPlayerIndicatopr;
 
     
 
@@ -78,12 +78,9 @@ public class PlaneExample : MonoBehaviour
             hits,TrackableType.PlaneWithinPolygon))
             {
             for (int i = 0; i < hits.Count; i++)
-                
             {
                 Debug.Log(hits[i].hitType);
-            }
-
-            
+            }            
         }
     }
 
@@ -104,37 +101,37 @@ public class PlaneExample : MonoBehaviour
         }
 
 
-        GetPlacementIndicator();
-        ShowPlacementIndicator();
+        //GetPlacementIndicator();
+        //ShowPlacementIndicator();
 
     }
 
-    private void ShowPlacementIndicator()
-    {
-        if (mediaPlayerPoseValid)
-        {
-            mediaPlayerIndicatopr.SetActive(true);
-            Debug.Log("Player pose is valid");
-            mediaPlayerIndicatopr.transform.SetPositionAndRotation(mediaPlayerPose.position,mediaPlayerPose.rotation);
-        }
-        else
-        {
-            mediaPlayerIndicatopr.SetActive(false);
-        }
-    }
+    //private void ShowPlacementIndicator()
+    //{
+    //    if (mediaPlayerPoseValid)
+    //    {
+    //        mediaPlayerIndicatopr.SetActive(true);
+    //        Debug.Log("Player pose is valid");
+    //        mediaPlayerIndicatopr.transform.SetPositionAndRotation(mediaPlayerPose.position,mediaPlayerPose.rotation);
+    //    }
+    //    else
+    //    {
+    //        mediaPlayerIndicatopr.SetActive(false);
+    //    }
+    //}
 
-    private void GetPlacementIndicator()
-    {
-       var hitsCheck = new List<ARRaycastHit>();
-    raycastManager.Raycast(new Ray(controllerActions.Position.ReadValue<Vector3>(), controllerActions.Rotation.ReadValue<Quaternion>() * Vector3.forward),
-            hits, TrackableType.PlaneWithinPolygon);
-        mediaPlayerPoseValid = hitsCheck.Count > 0;
-        if (mediaPlayerPoseValid)
-        {
-            Debug.Log("Pose is valid");
-            mediaPlayerPose = hitsCheck[0].pose;
-        }
-    }
+    //private void GetPlacementIndicator()
+    //{
+    //   var hitsCheck = new List<ARRaycastHit>();
+    //raycastManager.Raycast(new Ray(controllerActions.Position.ReadValue<Vector3>(), controllerActions.Rotation.ReadValue<Quaternion>() * Vector3.forward),
+    //        hits, TrackableType.PlaneWithinPolygon);
+    //    mediaPlayerPoseValid = hitsCheck.Count > 0;
+    //    if (mediaPlayerPoseValid)
+    //    {
+    //        Debug.Log("Pose is valid");
+    //        mediaPlayerPose = hitsCheck[0].pose;
+    //    }
+    //}
 
     private void OnPermissionGranted(string permission)
     {
