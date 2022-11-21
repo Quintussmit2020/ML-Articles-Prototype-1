@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 using UnityEngine.XR.MagicLeap;
@@ -33,7 +34,10 @@ public class PlaneExample : MonoBehaviour
     //private bool mediaPlayerPoseValid;// = false;
     //public GameObject mediaPlayerIndicatopr;
 
-    
+    public GameObject screen;
+    private bool isPlacing = true;
+    public MLMediaPlayer mediaplayer;
+    public GameObject screenDimmer;
 
     private void Awake()
     {
@@ -64,24 +68,19 @@ public class PlaneExample : MonoBehaviour
         }
 
         MLPermissions.RequestPermission(MLPermission.SpatialMapping, permissionCallbacks);
-
+        screen.SetActive(false);
         magicLeapInputs = new MagicLeapInputs();
         magicLeapInputs.Enable();
         controllerActions = new MagicLeapInputs.ControllerActions(magicLeapInputs);
-        controllerActions.Bumper.performed += Trigger_performed;
+        controllerActions.Trigger.performed += Trigger_performed;
     }
 
     private void Trigger_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
     {
+       
         Debug.Log("Trigger pressed");
-       if(raycastManager.Raycast(new Ray(controllerActions.Position.ReadValue<Vector3>(), controllerActions.Rotation.ReadValue<Quaternion>() * Vector3.forward), 
-            hits,TrackableType.PlaneWithinPolygon))
-            {
-            for (int i = 0; i < hits.Count; i++)
-            {
-                Debug.Log(hits[i].hitType);
-            }            
-        }
+        isPlacing = false;
+        
     }
 
     private void Update()
@@ -90,7 +89,7 @@ public class PlaneExample : MonoBehaviour
         {
             PlanesSubsystem.Extensions.Query = new PlanesSubsystem.Extensions.PlanesQuery
             {
-                Flags = planeManager.currentDetectionMode.ToMLQueryFlags() | PlanesSubsystem.Extensions.MLPlanesQueryFlags.Polygons | PlanesSubsystem.Extensions.MLPlanesQueryFlags.Semantic_Wall,
+                Flags = planeManager.requestedDetectionMode.ToMLQueryFlags() | PlanesSubsystem.Extensions.MLPlanesQueryFlags.Polygons | PlanesSubsystem.Extensions.MLPlanesQueryFlags.Semantic_Wall,
                 BoundsCenter = Camera.main.transform.position,
                 BoundsRotation = Camera.main.transform.rotation,
                 BoundsExtents = Vector3.one * 20f,
@@ -99,10 +98,18 @@ public class PlaneExample : MonoBehaviour
                 MinPlaneArea = minPlaneArea
             };
         }
-
-
-        //GetPlacementIndicator();
-        //ShowPlacementIndicator();
+        Ray raycastRay = new Ray(controllerActions.Position.ReadValue<Vector3>(), controllerActions.Rotation.ReadValue<Quaternion>() * Vector3.forward);
+        if (isPlacing & Physics.Raycast(raycastRay, out RaycastHit hitInfo, 100, LayerMask.GetMask("Planes")))
+        {
+            Debug.Log(hitInfo.transform);
+            screen.transform.position = hitInfo.point;
+            screen.transform.rotation = Quaternion.LookRotation(-hitInfo.normal);
+            screen.gameObject.SetActive(true);  
+        }
+        var touchPosition = controllerActions.TouchpadPosition.ReadValue<Vector2>();
+        var DimmingValue =Mathf.Clamp((touchPosition.y+1)/(1.8f),0,1);
+        screenDimmer.GetComponent<MeshRenderer>().material.SetFloat("_DimmingValue", DimmingValue);
+        Debug.Log(DimmingValue);
 
     }
 
@@ -136,6 +143,7 @@ public class PlaneExample : MonoBehaviour
     private void OnPermissionGranted(string permission)
     {
         planeManager.enabled = true;
+
     }
 
     private void OnPermissionDenied(string permission)

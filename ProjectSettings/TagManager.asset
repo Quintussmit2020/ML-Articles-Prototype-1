@@ -13,6 +13,7 @@ TagManager:
   - UI
   - 
   - 
+  - Planes
   - 
   - 
   - 
@@ -35,8 +36,7 @@ TagManager:
   - 
   - 
   - 
-  - 
-  - 
+  - SegmentedDimmer
   m_SortingLayers:
   - name: Default
     uniqueID: 0
