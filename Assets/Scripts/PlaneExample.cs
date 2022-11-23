@@ -103,6 +103,7 @@ public class PlaneExample : MonoBehaviour
         {
             isPlacing = false;
             mlMediaPlayer.gameObject.SetActive(true);
+            mediaPlayerIndicator.SetActive(false);
             mlMediaPlayer.transform.position = mediaPlayerIndicator.transform.position;
             mlMediaPlayer.transform.rotation = mediaPlayerIndicator.transform.rotation;
             mlMediaPlayer.Play();
