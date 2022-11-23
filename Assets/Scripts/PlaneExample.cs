@@ -1,10 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MagicLeap.Core;
 using Unity.Mathematics;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 using UnityEngine.XR.MagicLeap;
@@ -32,12 +34,15 @@ public class PlaneExample : MonoBehaviour
     private List<ARRaycastHit> hits = new List<ARRaycastHit>();
     //private Pose mediaPlayerPose;
     //private bool mediaPlayerPoseValid;// = false;
-    //public GameObject mediaPlayerIndicatopr;
 
-    public GameObject screen;
+    public MLMediaPlayerBehavior mlMediaPlayer;
+    public GameObject mediaPlayerIndicator;
+
     private bool isPlacing = true;
-    public MLMediaPlayer mediaplayer;
+
     public GameObject screenDimmer;
+
+    public MLVoiceIntentsConfiguration VoiceIntentsConfiguration;
 
     private void Awake()
     {
@@ -68,19 +73,42 @@ public class PlaneExample : MonoBehaviour
         }
 
         MLPermissions.RequestPermission(MLPermission.SpatialMapping, permissionCallbacks);
-        screen.SetActive(false);
+        MLPermissions.RequestPermission(MLPermission.VoiceInput, permissionCallbacks);
+
+        mediaPlayerIndicator.SetActive(false);
+        mlMediaPlayer.gameObject.SetActive(false);
+
         magicLeapInputs = new MagicLeapInputs();
         magicLeapInputs.Enable();
         controllerActions = new MagicLeapInputs.ControllerActions(magicLeapInputs);
         controllerActions.Trigger.performed += Trigger_performed;
+        controllerActions.TouchpadPosition.performed += TouchpadPositionOnperformed;
+
+        MLSegmentedDimmer.Activate();
+
+    }
+
+    private void TouchpadPositionOnperformed(InputAction.CallbackContext obj)
+    {
+        var touchPosition = controllerActions.TouchpadPosition.ReadValue<Vector2>();
+        var DimmingValue = Mathf.Clamp((touchPosition.y + 1) / (1.8f), 0, 1);
+        screenDimmer.GetComponent<MeshRenderer>().material.SetFloat("_DimmingValue", DimmingValue);
+        Debug.Log(DimmingValue);
     }
 
     private void Trigger_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
     {
-       
         Debug.Log("Trigger pressed");
-        isPlacing = false;
         
+        if (mediaPlayerIndicator.activeSelf)
+        {
+            isPlacing = false;
+            mlMediaPlayer.gameObject.SetActive(true);
+            mlMediaPlayer.transform.position = mediaPlayerIndicator.transform.position;
+            mlMediaPlayer.transform.rotation = mediaPlayerIndicator.transform.rotation;
+            mlMediaPlayer.Play();
+        }
+  
     }
 
     private void Update()
@@ -98,52 +126,88 @@ public class PlaneExample : MonoBehaviour
                 MinPlaneArea = minPlaneArea
             };
         }
+        
         Ray raycastRay = new Ray(controllerActions.Position.ReadValue<Vector3>(), controllerActions.Rotation.ReadValue<Quaternion>() * Vector3.forward);
         if (isPlacing & Physics.Raycast(raycastRay, out RaycastHit hitInfo, 100, LayerMask.GetMask("Planes")))
         {
             Debug.Log(hitInfo.transform);
-            screen.transform.position = hitInfo.point;
-            screen.transform.rotation = Quaternion.LookRotation(-hitInfo.normal);
-            screen.gameObject.SetActive(true);  
+            mediaPlayerIndicator.transform.position = hitInfo.point;
+            mediaPlayerIndicator.transform.rotation = Quaternion.LookRotation(-hitInfo.normal);
+            mediaPlayerIndicator.gameObject.SetActive(true);
+         
         }
-        var touchPosition = controllerActions.TouchpadPosition.ReadValue<Vector2>();
-        var DimmingValue =Mathf.Clamp((touchPosition.y+1)/(1.8f),0,1);
-        screenDimmer.GetComponent<MeshRenderer>().material.SetFloat("_DimmingValue", DimmingValue);
-        Debug.Log(DimmingValue);
-
     }
 
-    //private void ShowPlacementIndicator()
-    //{
-    //    if (mediaPlayerPoseValid)
-    //    {
-    //        mediaPlayerIndicatopr.SetActive(true);
-    //        Debug.Log("Player pose is valid");
-    //        mediaPlayerIndicatopr.transform.SetPositionAndRotation(mediaPlayerPose.position,mediaPlayerPose.rotation);
-    //    }
-    //    else
-    //    {
-    //        mediaPlayerIndicatopr.SetActive(false);
-    //    }
-    //}
-
-    //private void GetPlacementIndicator()
-    //{
-    //   var hitsCheck = new List<ARRaycastHit>();
-    //raycastManager.Raycast(new Ray(controllerActions.Position.ReadValue<Vector3>(), controllerActions.Rotation.ReadValue<Quaternion>() * Vector3.forward),
-    //        hits, TrackableType.PlaneWithinPolygon);
-    //    mediaPlayerPoseValid = hitsCheck.Count > 0;
-    //    if (mediaPlayerPoseValid)
-    //    {
-    //        Debug.Log("Pose is valid");
-    //        mediaPlayerPose = hitsCheck[0].pose;
-    //    }
-    //}
+    public void ExitMediaPlayer()
+    {
+        mlMediaPlayer.Pause();
+        mlMediaPlayer.gameObject.SetActive(false);
+        mediaPlayerIndicator.SetActive(true);
+        isPlacing = true;
+    }
 
     private void OnPermissionGranted(string permission)
     {
-        planeManager.enabled = true;
+        if(permission == MLPermission.SpatialMapping)
+            planeManager.enabled = true;
 
+        if (permission == MLPermission.VoiceInput)
+            InitializeVoiceInput();
+    }
+
+    private void InitializeVoiceInput()
+    {
+        bool isVoiceEnabled = MLVoice.VoiceEnabled;
+        if (isVoiceEnabled)
+        {
+           var result = MLVoice.SetupVoiceIntents(VoiceIntentsConfiguration);
+           if (result.IsOk)
+           {
+                MLVoice.OnVoiceEvent += MLVoiceOnOnVoiceEvent;
+           }
+           else
+           {
+               Debug.LogError("Voice could not initialize:" + result);
+           }
+        }
+        else
+        {
+            UnityEngine.XR.MagicLeap.SettingsIntentsLauncher.LaunchSystemVoiceInputSettings();
+            Application.Quit();
+        }
+    }
+
+
+    private void MLVoiceOnOnVoiceEvent(in bool wassuccessful, in MLVoice.IntentEvent voiceevent)
+    {
+        if (wassuccessful)
+        {
+            if (voiceevent.EventID == 101)
+            {
+                Debug.Log("Show Global Dimmer");
+                ToggleGlobalDimming(true);
+            }
+            if (voiceevent.EventID == 102)
+            {
+                Debug.Log("Hide Global Dimmer");
+                ToggleGlobalDimming(false);
+            }
+            if (voiceevent.EventID == 103)
+            {
+                Debug.Log("Show Segmented Dimmer");
+                screenDimmer.SetActive(true);
+            }
+            if (voiceevent.EventID == 104)
+            {
+                Debug.Log("Hide Segmented Dimmer");
+                screenDimmer.SetActive(false);
+            }
+        }
+    }
+
+    private void ToggleGlobalDimming(bool isEnabled)
+    {
+        MLGlobalDimmer.SetValue(isEnabled ? 1 : 0);
     }
 
     private void OnPermissionDenied(string permission)
