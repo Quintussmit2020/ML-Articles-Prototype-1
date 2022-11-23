@@ -26,14 +26,9 @@ public class PlaneExample : MonoBehaviour
     private MagicLeapInputs magicLeapInputs;
     private MagicLeapInputs.ControllerActions controllerActions;
 
-
     private readonly MLPermissions.Callbacks permissionCallbacks = new MLPermissions.Callbacks();
 
-    public ARRaycastManager raycastManager;
-    private List<ARRaycastHit> hits = new List<ARRaycastHit>();
-    //private Pose mediaPlayerPose;
-    //private bool mediaPlayerPoseValid;// = false;
-
+    public Transform mediaPlayerRoot;
     public MLMediaPlayerBehavior mlMediaPlayer;
     public GameObject mediaPlayerIndicator;
 
@@ -75,7 +70,7 @@ public class PlaneExample : MonoBehaviour
         MLPermissions.RequestPermission(MLPermission.VoiceInput, permissionCallbacks);
 
         mediaPlayerIndicator.SetActive(false);
-        mlMediaPlayer.gameObject.SetActive(false);
+        mediaPlayerRoot.gameObject.SetActive(false);
 
         magicLeapInputs = new MagicLeapInputs();
         magicLeapInputs.Enable();
@@ -102,10 +97,10 @@ public class PlaneExample : MonoBehaviour
         if (mediaPlayerIndicator.activeSelf)
         {
             isPlacing = false;
-            mlMediaPlayer.gameObject.SetActive(true);
+            mediaPlayerRoot.gameObject.SetActive(true);
             mediaPlayerIndicator.SetActive(false);
-            mlMediaPlayer.transform.position = mediaPlayerIndicator.transform.position;
-            mlMediaPlayer.transform.rotation = mediaPlayerIndicator.transform.rotation;
+            mediaPlayerRoot.transform.position = mediaPlayerIndicator.transform.position;
+            mediaPlayerRoot.transform.rotation = mediaPlayerIndicator.transform.rotation;
             mlMediaPlayer.Play();
         }
   
@@ -141,7 +136,7 @@ public class PlaneExample : MonoBehaviour
     public void ExitMediaPlayer()
     {
         mlMediaPlayer.Pause();
-        mlMediaPlayer.gameObject.SetActive(false);
+        mediaPlayerRoot.gameObject.SetActive(false);
         mediaPlayerIndicator.SetActive(true);
         isPlacing = true;
     }

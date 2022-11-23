@@ -289,7 +289,7 @@ MonoBehaviour:
   maxResults: 100
   minHoleLength: 0.5
   minPlaneArea: 0.25
-  raycastManager: {fileID: 684728762}
+  mediaPlayerRoot: {fileID: 1799508446}
   mlMediaPlayer: {fileID: 1760243361}
   mediaPlayerIndicator: {fileID: 2484572839949989453}
   screenDimmer: {fileID: 258715753}
@@ -979,6 +979,12 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 1760243359}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &1799508446 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1349745745868055630, guid: 0ffd6c0636c54b94cb445a6bcd349bf1,
+    type: 3}
+  m_PrefabInstance: {fileID: 1760243359}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2484572839949989452
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1005,7 +1011,7 @@ PrefabInstance:
     - target: {fileID: 2484572841421393357, guid: 3a050553675a79545a17d23c518e58ba,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.5235521
+      value: 0.3562772
       objectReference: {fileID: 0}
     - target: {fileID: 2484572841421393357, guid: 3a050553675a79545a17d23c518e58ba,
         type: 3}
@@ -1015,7 +1021,7 @@ PrefabInstance:
     - target: {fileID: 2484572841421393357, guid: 3a050553675a79545a17d23c518e58ba,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.0764
+      value: 0.0072
       objectReference: {fileID: 0}
     - target: {fileID: 2484572841421393357, guid: 3a050553675a79545a17d23c518e58ba,
         type: 3}
