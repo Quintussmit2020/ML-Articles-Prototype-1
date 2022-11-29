@@ -88,7 +88,9 @@ public class SpatialAnchorsExample : MonoBehaviour
         {
             //Clear the old visuals
             ClearVisuals();
-            Debug.Log("Not Localized " + info.LocalizationStatus);
+            _localizedSpace = "";
+            numberOfSearches = 0;
+           Debug.Log("Not Localized " + info.LocalizationStatus);
             return;
         }
 
@@ -131,8 +133,8 @@ public class SpatialAnchorsExample : MonoBehaviour
             return false;
         }
 
-        //Clear the old visuals
-        if (numberOfSearches <= 2)
+        //Wait a search to make sure anchors are initialized
+        if (numberOfSearches <= 1)
         {
             Debug.LogWarning("Initializing Anchors");
             //Search again
@@ -197,7 +199,6 @@ public class SpatialAnchorsExample : MonoBehaviour
             var persistentObject = Instantiate(Prefab1, controllerPose.position, controllerPose.rotation);
             _persistentObjectsById.Add(anchor.Id, persistentObject);
             SimpleAnchorBinding.Storage.SaveToFile();
-
         }
     }
 
@@ -245,11 +246,14 @@ public class SpatialAnchorsExample : MonoBehaviour
         //Delete the gameObject if it exists
         if (savedAnchor != null)
         {
-            GameObject anchorVisual = _persistentObjectsById[id];
-            _persistentObjectsById.Remove(id);
+            if (_persistentObjectsById.ContainsKey(id))
+            {
+                GameObject anchorVisual = _persistentObjectsById[id];
+                _persistentObjectsById.Remove(id);
+                Destroy(anchorVisual);
+            }
 
             MLAnchors.Anchor.DeleteAnchorWithId(id);
-            Destroy(anchorVisual);
             savedAnchor.UnBind();
             SimpleAnchorBinding.Storage.SaveToFile();
             return true;
