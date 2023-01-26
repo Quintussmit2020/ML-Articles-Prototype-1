@@ -22,3 +22,9 @@ MonoBehaviour:
     Value: Turn On Segmented Dimming | Show Segmented Dimmer
   - Id: 104
     Value: Turn Off Segmented Dimming | Hide Segmented Dimmer
+  - Id: 105
+    Value: Play video | Play
+  - Id: 106
+    Value: Pause Video | Pause
+  - Id: 107
+    Value: Close player | Close
