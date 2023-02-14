@@ -18,10 +18,8 @@ public class VoiceCommands : MonoBehaviour
 
 
     public PlayerPlacement playerPlacement;
-    
 
-
-
+    DimmingController dimmingController;
     public GameObject screenDimmer;
 
     public MLVoiceIntentsConfiguration VoiceIntentsConfiguration;
@@ -43,8 +41,8 @@ public class VoiceCommands : MonoBehaviour
     private void Start()
     {         
         MLPermissions.RequestPermission(MLPermission.VoiceInput, permissionCallbacks);
-        MLSegmentedDimmer.Activate();
-        screenDimmer.SetActive(false);
+        dimmingController = new DimmingController();
+        dimmingController.screenDimmer = screenDimmer;
     }
 
 
@@ -92,22 +90,22 @@ public class VoiceCommands : MonoBehaviour
             if (voiceevent.EventID == 101)
             {
                 Debug.Log("Show Global Dimmer");
-                ToggleGlobalDimming(true);
+                dimmingController.ToggleGlobalDimming(true);
             }
             if (voiceevent.EventID == 102)
             {
                 Debug.Log("Hide Global Dimmer");
-                ToggleGlobalDimming(false);
+                dimmingController.ToggleGlobalDimming(false);
             }
             if (voiceevent.EventID == 103)
             {
                 Debug.Log("Show Segmented Dimmer");
-                screenDimmer.SetActive(true);
+                dimmingController.ActivateSegmentedDimming(true);
             }
             if (voiceevent.EventID == 104)
             {
                 Debug.Log("Hide Segmented Dimmer");
-                screenDimmer.SetActive(false);
+                dimmingController.ActivateSegmentedDimming(false);
             }
             if (voiceevent.EventID == 105)
             {

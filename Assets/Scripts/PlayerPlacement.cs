@@ -14,8 +14,7 @@ public class PlayerPlacement : MonoBehaviour
     [SerializeField, Tooltip("Maximum number of planes to return each query")]
     private uint maxResults = 100;
 
-    [SerializeField, Tooltip("Minimum hole length to treat as a hole in the plane")]
-    private float minHoleLength = 0.5f;
+    
 
     [SerializeField, Tooltip("Minimum plane area to treat as a valid plane")]
     private float minPlaneArea = 0.25f;
@@ -123,7 +122,7 @@ public class PlayerPlacement : MonoBehaviour
         Ray raycastRay = new Ray(controllerActions.Position.ReadValue<Vector3>(), controllerActions.Rotation.ReadValue<Quaternion>() * Vector3.forward);
         if (isPlacing & Physics.Raycast(raycastRay, out RaycastHit hitInfo, 100, LayerMask.GetMask("Planes")))
         {
-            Debug.Log(hitInfo.transform);
+            //Debug.Log(hitInfo.transform);
             mediaPlayerIndicator.transform.position = hitInfo.point;
             mediaPlayerIndicator.transform.rotation = Quaternion.LookRotation(-hitInfo.normal);
             mediaPlayerIndicator.gameObject.SetActive(true);

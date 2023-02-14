@@ -12,41 +12,20 @@ using UnityEngine.XR.MagicLeap;
 
 public class ControllerActions : MonoBehaviour
 {
-
+    DimmingController dimmingController;
 
     private MagicLeapInputs magicLeapInputs;
     private MagicLeapInputs.ControllerActions controllerActions;
 
-    private readonly MLPermissions.Callbacks permissionCallbacks = new MLPermissions.Callbacks();
-
     public Transform mediaPlayerRoot;
     public MLMediaPlayerBehavior mlMediaPlayer;
     
-
     private bool isDimmed = false;
-
     public GameObject screenDimmer;
 
 
-
-    private void Awake()
-    {
-        permissionCallbacks.OnPermissionGranted += OnPermissionGranted;
-        permissionCallbacks.OnPermissionDenied += OnPermissionDenied;
-        permissionCallbacks.OnPermissionDeniedAndDontAskAgain += OnPermissionDenied;
-    }
-
-    private void OnDestroy()
-    {
-        permissionCallbacks.OnPermissionGranted -= OnPermissionGranted;
-        permissionCallbacks.OnPermissionDenied -= OnPermissionDenied;
-        permissionCallbacks.OnPermissionDeniedAndDontAskAgain -= OnPermissionDenied;
-    }
-
     private void Start()
     { 
-
-
         magicLeapInputs = new MagicLeapInputs();
         magicLeapInputs.Enable();
         controllerActions = new MagicLeapInputs.ControllerActions(magicLeapInputs);
@@ -54,20 +33,15 @@ public class ControllerActions : MonoBehaviour
         controllerActions.Menu.performed += Menu_performed;
         controllerActions.TouchpadPosition.performed += TouchpadPositionOnperformed;
 
+        dimmingController = new DimmingController();
+        dimmingController.screenDimmer = screenDimmer;
     }
 
     private void Menu_performed(InputAction.CallbackContext obj)
     {
-        if (!isDimmed)
-        {
-            ToggleGlobalDimming(true);
-            isDimmed = true;
-        }
-        else
-        {
-            ToggleGlobalDimming(false);
-            isDimmed = false;
-        }
+        isDimmed = !isDimmed;
+        //ToggleGlobalDimming(isDimmed);
+        dimmingController.ToggleGlobalDimming(isDimmed);
     }
 
     private void Bumper_performed(InputAction.CallbackContext obj)
@@ -89,44 +63,16 @@ public class ControllerActions : MonoBehaviour
     {
         var touchPosition = controllerActions.TouchpadPosition.ReadValue<Vector2>();
         var DimmingValue = Mathf.Clamp((touchPosition.y + 1) / (1.8f), 0, 1);
-        screenDimmer.GetComponent<MeshRenderer>().material.SetFloat("_DimmingValue", DimmingValue);
-        Debug.Log(DimmingValue);
-        MLGlobalDimmer.SetValue(DimmingValue);
-    }
-
-    private void ToggleGlobalDimming(bool isEnabled)
-    {
-        MLGlobalDimmer.SetValue(isEnabled ? 1 : 0);
-    }
-    private void Trigger_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
-    {
-        Debug.Log("Trigger pressed");
-
-
-    }
-
-    private void Update()
-    {
+        dimmingController.SegmentedDimming(DimmingValue);
         
+
+        //screenDimmer.GetComponent<MeshRenderer>().material.SetFloat("_DimmingValue", DimmingValue);
+        //MLGlobalDimmer.SetValue(DimmingValue);
     }
 
-
-
-    private void OnPermissionGranted(string permission)
-    {
-
-    }
-
-   
-
-
-
-
-
-    private void OnPermissionDenied(string permission)
-    {
-        Debug.LogError($"Failed to create Planes Subsystem due to missing or denied {MLPermission.SpatialMapping} permission. Please add to manifest. Disabling script.");
-        enabled = false;
-    }
+    //private void ToggleGlobalDimming(bool isEnabled)
+    //{
+    //    MLGlobalDimmer.SetValue(isEnabled ? 1 : 0);
+    //}
 
 }
