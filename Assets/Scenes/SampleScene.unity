@@ -1009,7 +1009,7 @@ PrefabInstance:
     - target: {fileID: 6669455948576777451, guid: 0ffd6c0636c54b94cb445a6bcd349bf1,
         type: 3}
       propertyPath: source
-      value: Video_720p.mp4
+      value: sintel-1280-surround.mp4
       objectReference: {fileID: 0}
     - target: {fileID: 6669455948576777451, guid: 0ffd6c0636c54b94cb445a6bcd349bf1,
         type: 3}
