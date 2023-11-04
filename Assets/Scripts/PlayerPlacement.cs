@@ -144,4 +144,10 @@ public class PlayerPlacement : MonoBehaviour
             Debug.Log("Plane manager is active");
         }
     }
+
+    void DestroyObject()
+    {
+        Debug.Log("Close button detected");
+        Destroy(gameObject); // Destroy the game object this script is attached to
+    }
 }
